@@ -1,5 +1,6 @@
 #include <airsim_ros_wrapper.h>
 #include "common/AirSimSettings.hpp"
+#include "common/common_utils/Utils.hpp"
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 
 using namespace std::placeholders;
@@ -405,6 +406,11 @@ void AirsimROSWrapper::create_ros_pubs_from_settings_json()
 
     // todo add per vehicle reset in AirLib API
     reset_srvr_ = nh_->create_service<airsim_interfaces::srv::Reset>("~/reset", std::bind(&AirsimROSWrapper::reset_srv_cb, this, _1, _2));
+    
+    //set local position
+    if (airsim_mode_ == AIRSIM_MODE::DRONE) {
+        set_local_position_srvr_ = nh_->create_service<airsim_interfaces::srv::SetLocalPosition>("~/set_local_position", std::bind(&AirsimROSWrapper::set_local_position_srv_cb, this, _1, _2));
+    }
 
     if (publish_clock_) {
         clock_pub_ = nh_->create_publisher<rosgraph_msgs::msg::Clock>("~/clock", 1);
@@ -601,6 +607,20 @@ bool AirsimROSWrapper::reset_srv_cb(std::shared_ptr<airsim_interfaces::srv::Rese
 
     airsim_client_->reset();
     return true; //todo
+}
+
+bool AirsimROSWrapper::set_local_position_srv_cb(std::shared_ptr<airsim_interfaces::srv::SetLocalPosition::Request> request, std::shared_ptr<airsim_interfaces::srv::SetLocalPosition::Response> response)
+{
+    unused(response);
+    std::lock_guard<std::mutex> guard(control_mutex_);
+
+    auto api = static_cast<msr::airlib::MultirotorRpcLibClient*>(airsim_client_.get());
+    api->moveToPositionAsync(request->x, request->y, request->z, 5.f,
+        common_utils::Utils::max<float>(), 
+        msr::airlib::DrivetrainType::MaxDegreeOfFreedom, 
+        msr::airlib::YawMode(false, request->yaw), -1, 1, request->vehicle_name);
+
+    return true;
 }
 
 tf2::Quaternion AirsimROSWrapper::get_tf2_quat(const msr::airlib::Quaternionr& airlib_quat) const
