@@ -412,6 +412,9 @@ void AirsimROSWrapper::create_ros_pubs_from_settings_json()
         set_local_position_srvr_ = nh_->create_service<airsim_interfaces::srv::SetLocalPosition>("~/set_local_position", std::bind(&AirsimROSWrapper::set_local_position_srv_cb, this, _1, _2));
     }
 
+    //add vehicle
+    sim_add_vehicle_srvr_ = nh_->create_service<airsim_interfaces::srv::SimAddVehicle>("~/sim_add_vehicle", std::bind(&AirsimROSWrapper::sim_add_vehicle_srv_cb, this, _1, _2));
+
     if (publish_clock_) {
         clock_pub_ = nh_->create_publisher<rosgraph_msgs::msg::Clock>("~/clock", 1);
     }
@@ -623,6 +626,20 @@ bool AirsimROSWrapper::set_local_position_srv_cb(std::shared_ptr<airsim_interfac
     return true;
 }
 
+bool AirsimROSWrapper::sim_add_vehicle_srv_cb(const std::shared_ptr<airsim_interfaces::srv::SimAddVehicle::Request> request, const std::shared_ptr<airsim_interfaces::srv::SimAddVehicle::Response> response)
+{
+    unused(response);
+    std::lock_guard<std::mutex> guard(control_mutex_);
+
+    auto api = static_cast<msr::airlib::MultirotorRpcLibClient*>(airsim_client_.get());
+
+    auto pose = get_airlib_pose(request->pose);
+    api->simAddVehicle(request->vehicle_name, request->vehicle_type, 
+                        pose, request->pawn_path);
+
+    return true;
+}
+
 tf2::Quaternion AirsimROSWrapper::get_tf2_quat(const msr::airlib::Quaternionr& airlib_quat) const
 {
     return tf2::Quaternion(airlib_quat.x(), airlib_quat.y(), airlib_quat.z(), airlib_quat.w());
@@ -657,6 +674,12 @@ void AirsimROSWrapper::car_cmd_cb(const airsim_interfaces::msg::CarControls::Sha
 msr::airlib::Pose AirsimROSWrapper::get_airlib_pose(const float& x, const float& y, const float& z, const msr::airlib::Quaternionr& airlib_quat) const
 {
     return msr::airlib::Pose(msr::airlib::Vector3r(x, y, z), airlib_quat);
+}
+
+msr::airlib::Pose AirsimROSWrapper::get_airlib_pose(const geometry_msgs::msg::Pose& pose) const
+{
+    return msr::airlib::Pose(msr::airlib::Vector3r(pose.position.x, pose.position.y, pose.position.z), 
+                             msr::airlib::Quaternionr(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z));
 }
 
 void AirsimROSWrapper::vel_cmd_body_frame_cb(const airsim_interfaces::msg::VelCmd::SharedPtr msg, const std::string& vehicle_name)

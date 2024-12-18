@@ -29,6 +29,7 @@ STRICT_MODE_OFF //todo what does this do?
 #include <airsim_interfaces/srv/refresh_instance_segmentation.hpp>
 #include <airsim_interfaces/srv/refresh_object_transforms.hpp>
 #include <airsim_interfaces/srv/set_local_position.hpp>
+#include <airsim_interfaces/srv/sim_add_vehicle.hpp>
 #include <airsim_interfaces/msg/vel_cmd.hpp>
 #include <airsim_interfaces/msg/vel_cmd_group.hpp>
 #include <airsim_interfaces/msg/car_controls.hpp>
@@ -297,6 +298,7 @@ private:
     bool instance_segmentation_refresh_cb(const std::shared_ptr<airsim_interfaces::srv::RefreshInstanceSegmentation::Request> request, const std::shared_ptr<airsim_interfaces::srv::RefreshInstanceSegmentation::Response> response);
     bool object_transforms_refresh_cb(const std::shared_ptr<airsim_interfaces::srv::RefreshObjectTransforms::Request> request, const std::shared_ptr<airsim_interfaces::srv::RefreshObjectTransforms::Response> response);
     bool set_local_position_srv_cb(const std::shared_ptr<airsim_interfaces::srv::SetLocalPosition::Request> request, const std::shared_ptr<airsim_interfaces::srv::SetLocalPosition::Response> response);
+bool sim_add_vehicle_srv_cb(const std::shared_ptr<airsim_interfaces::srv::SimAddVehicle::Request> request, const std::shared_ptr<airsim_interfaces::srv::SimAddVehicle::Response> response);
 
     /// ROS tf broadcasters
     void publish_odom_tf(const nav_msgs::msg::Odometry& odom_msg);
@@ -336,6 +338,7 @@ private:
     airsim_interfaces::msg::CarState get_roscarstate_msg_from_car_state(const msr::airlib::CarApiBase::CarState& car_state) const;
     airsim_interfaces::msg::ComputerVisionState get_roscomputervisionstate_msg_from_computer_vision_state(const msr::airlib::ComputerVisionApiBase::ComputerVisionState& computer_vision_state) const;
     msr::airlib::Pose get_airlib_pose(const float& x, const float& y, const float& z, const msr::airlib::Quaternionr& airlib_quat) const;
+    msr::airlib::Pose get_airlib_pose(const geometry_msgs::msg::Pose& pose) const;
     airsim_interfaces::msg::GPSYaw get_gps_msg_from_airsim_geo_point(const msr::airlib::GeoPoint& geo_point) const;
     sensor_msgs::msg::NavSatFix get_gps_sensor_msg_from_airsim_geo_point(const msr::airlib::GeoPoint& geo_point) const;
     sensor_msgs::msg::Imu get_imu_msg_from_airsim(const msr::airlib::ImuBase::Output& imu_data) const;
@@ -387,6 +390,7 @@ private:
     msr::airlib::GeoPoint origin_geo_point_; // gps coord of unreal origin
     airsim_interfaces::msg::GPSYaw origin_geo_point_msg_; // todo duplicate
     rclcpp::Service<airsim_interfaces::srv::SetLocalPosition>::SharedPtr set_local_position_srvr_;
+    rclcpp::Service<airsim_interfaces::srv::SimAddVehicle>::SharedPtr sim_add_vehicle_srvr_;
 
     AirSimSettingsParser airsim_settings_parser_;
     std::unordered_map<std::string, std::unique_ptr<VehicleROS>> vehicle_name_ptr_map_;

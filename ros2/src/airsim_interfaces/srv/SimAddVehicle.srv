@@ -1,0 +1,6 @@
+string vehicle_name
+string vehicle_type
+geometry_msgs/Pose pose
+string pawn_path
+---
+bool success
