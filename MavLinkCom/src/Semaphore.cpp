@@ -3,6 +3,7 @@
 
 #include "Semaphore.hpp"
 #include "Utils.hpp"
+#include <stdexcept>
 
 using namespace mavlink_utils;
 
