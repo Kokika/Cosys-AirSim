@@ -30,6 +30,7 @@ STRICT_MODE_OFF //todo what does this do?
 #include <airsim_interfaces/srv/refresh_object_transforms.hpp>
 #include <airsim_interfaces/srv/set_local_position.hpp>
 #include <airsim_interfaces/srv/sim_add_vehicle.hpp>
+#include <airsim_interfaces/srv/list_scene_object_tags.hpp>
 #include <airsim_interfaces/msg/vel_cmd.hpp>
 #include <airsim_interfaces/msg/vel_cmd_group.hpp>
 #include <airsim_interfaces/msg/car_controls.hpp>
@@ -298,7 +299,8 @@ private:
     bool instance_segmentation_refresh_cb(const std::shared_ptr<airsim_interfaces::srv::RefreshInstanceSegmentation::Request> request, const std::shared_ptr<airsim_interfaces::srv::RefreshInstanceSegmentation::Response> response);
     bool object_transforms_refresh_cb(const std::shared_ptr<airsim_interfaces::srv::RefreshObjectTransforms::Request> request, const std::shared_ptr<airsim_interfaces::srv::RefreshObjectTransforms::Response> response);
     bool set_local_position_srv_cb(const std::shared_ptr<airsim_interfaces::srv::SetLocalPosition::Request> request, const std::shared_ptr<airsim_interfaces::srv::SetLocalPosition::Response> response);
-bool sim_add_vehicle_srv_cb(const std::shared_ptr<airsim_interfaces::srv::SimAddVehicle::Request> request, const std::shared_ptr<airsim_interfaces::srv::SimAddVehicle::Response> response);
+    bool sim_add_vehicle_srv_cb(const std::shared_ptr<airsim_interfaces::srv::SimAddVehicle::Request> request, const std::shared_ptr<airsim_interfaces::srv::SimAddVehicle::Response> response);
+    bool list_scene_object_tags_srv_cb(const std::shared_ptr<airsim_interfaces::srv::ListSceneObjectTags::Request> request, const std::shared_ptr<airsim_interfaces::srv::ListSceneObjectTags::Response> response);
 
     /// ROS tf broadcasters
     void publish_odom_tf(const nav_msgs::msg::Odometry& odom_msg);
@@ -391,6 +393,7 @@ private:
     airsim_interfaces::msg::GPSYaw origin_geo_point_msg_; // todo duplicate
     rclcpp::Service<airsim_interfaces::srv::SetLocalPosition>::SharedPtr set_local_position_srvr_;
     rclcpp::Service<airsim_interfaces::srv::SimAddVehicle>::SharedPtr sim_add_vehicle_srvr_;
+    rclcpp::Service<airsim_interfaces::srv::ListSceneObjectTags>::SharedPtr list_scene_object_tags_srvr_;
 
     AirSimSettingsParser airsim_settings_parser_;
     std::unordered_map<std::string, std::unique_ptr<VehicleROS>> vehicle_name_ptr_map_;

@@ -223,8 +223,6 @@ void AirsimROSWrapper::create_ros_pubs_from_settings_json()
 
             std::function<bool(std::shared_ptr<airsim_interfaces::srv::Land::Request>, std::shared_ptr<airsim_interfaces::srv::Land::Response>)> fcn_land_srvr = std::bind(&AirsimROSWrapper::land_srv_cb, this, _1, _2, vehicle_ros->vehicle_name_);
             drone->land_srvr_ = nh_->create_service<airsim_interfaces::srv::Land>(topic_prefix + "/land", fcn_land_srvr);
-
-            // vehicle_ros.reset_srvr = nh_->create_service(curr_vehicle_name + "/reset",&AirsimROSWrapper::reset_srv_cb, this);
         }
         else if(airsim_mode_ == AIRSIM_MODE::CAR) {
             auto car = static_cast<CarROS*>(vehicle_ros.get());
@@ -385,8 +383,6 @@ void AirsimROSWrapper::create_ros_pubs_from_settings_json()
         }
 
         vehicle_name_ptr_map_.emplace(curr_vehicle_name, std::move(vehicle_ros)); // allows fast lookup in command callbacks in case of a lot of drones
-    
-      
     }   
 
     // add takeoff and land all services if more than 2 drones
@@ -414,6 +410,8 @@ void AirsimROSWrapper::create_ros_pubs_from_settings_json()
 
     //add vehicle
     sim_add_vehicle_srvr_ = nh_->create_service<airsim_interfaces::srv::SimAddVehicle>("~/sim_add_vehicle", std::bind(&AirsimROSWrapper::sim_add_vehicle_srv_cb, this, _1, _2));
+
+    list_scene_object_tags_srvr_ = nh_->create_service<airsim_interfaces::srv::ListSceneObjectTags>("~/list_scene_object_tags", std::bind(&AirsimROSWrapper::list_scene_object_tags_srv_cb, this, _1, _2));
 
     if (publish_clock_) {
         clock_pub_ = nh_->create_publisher<rosgraph_msgs::msg::Clock>("~/clock", 1);
@@ -637,6 +635,20 @@ bool AirsimROSWrapper::sim_add_vehicle_srv_cb(const std::shared_ptr<airsim_inter
     api->simAddVehicle(request->vehicle_name, request->vehicle_type, 
                         pose, request->pawn_path);
 
+    return true;
+}
+
+bool AirsimROSWrapper::list_scene_object_tags_srv_cb(const std::shared_ptr<airsim_interfaces::srv::ListSceneObjectTags::Request> request, const std::shared_ptr<airsim_interfaces::srv::ListSceneObjectTags::Response> response)
+{
+    std::lock_guard<std::mutex> guard(control_mutex_);
+    std::string regex_name = request->regex_name.empty() ? ".*": request->regex_name;
+    std::vector<std::pair<std::string, std::string>> first_tag = airsim_client_->simListSceneObjectsTags(regex_name);
+
+    for(const auto& pair: first_tag)
+    {
+        response->objects.push_back(pair.first);
+        response->tags.push_back(pair.second);
+    }
     return true;
 }
 
@@ -1170,7 +1182,6 @@ sensor_msgs::msg::Range AirsimROSWrapper::get_range_from_airsim(const msr::airli
 
     return dist_msg;
 }
-
 
 airsim_interfaces::msg::InstanceSegmentationList AirsimROSWrapper::get_instance_segmentation_list_msg_from_airsim() const{
     airsim_interfaces::msg::InstanceSegmentationList instance_segmentation_list_msg;
