@@ -723,6 +723,21 @@ class VehicleClient:
         """
         return self.client.call('simListSceneObjects', name_regex)
 
+    def simListSceneObjectsTags(self, name_regex='.*'):
+        """
+        Lists the objects present and specific tag in the environment which is tag is fulfil the regex.
+
+        The default behavior is to list all objects. A regex can be used to return a smaller list
+        of matching objects or actors.
+
+        Args:
+            name_regex (str, optional): String to match actor names against, e.g., "Cylinder.*".
+
+        Returns:
+            list[list[str, str]]: List containing the names of the objects.
+        """
+        return self.client.call('simListSceneObjectsTags', name_regex)
+
     def simLoadLevel(self, level_name):
         """
         Loads a level specified by its name.
