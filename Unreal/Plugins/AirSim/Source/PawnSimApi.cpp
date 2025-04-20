@@ -597,18 +597,17 @@ msr::airlib::Kinematics::State PawnSimApi::getPhysicsRawKinematics()
 {
     msr::airlib::Kinematics::State state;
 
-    UPrimitiveComponent* PrimComp = dynamic_cast<UPrimitiveComponent*>(getPawn()->GetRootComponent());
-    if (PrimComp == nullptr)
+    UPrimitiveComponent* primComp = dynamic_cast<UPrimitiveComponent*>(getPawn()->GetRootComponent());
+    if (primComp == nullptr)
     {
-        UE_LOG(LogTemp, Warning, TEXT("PrimComp nullptr"))
+        UE_LOG(LogTemp, Warning, TEXT("PrimComp nullptr"));
         return state;
     }
 
-    state.pose.position = toVector3r(PrimComp->GetComponentLocation());
-    state.pose.orientation = toQuaternion(PrimComp->GetComponentQuat());
-    state.twist.linear = toVector3r(PrimComp->GetPhysicsLinearVelocity());
-    state.twist.angular = toVector3r(PrimComp->GetPhysicsAngularVelocityInDegrees());
-
+    state.pose.position = toVector3r(primComp->GetComponentLocation());
+    state.pose.orientation = toQuaternion(primComp->GetComponentQuat());
+    state.twist.linear = toVector3r(primComp->GetPhysicsLinearVelocity());
+    state.twist.angular = toVector3r(primComp->GetPhysicsAngularVelocityInRadians());
     return state;
 }
 
@@ -625,22 +624,19 @@ FQuat toQuaternion(const msr::airlib::Quaternionr quat)
 void PawnSimApi::setPhysicsRawKinematics(const Kinematics::State& state)
 {
     UAirBlueprintLib::RunCommandOnGameThread([&]() {
-        UPrimitiveComponent* PrimComp = dynamic_cast<UPrimitiveComponent*>(getPawn()->GetRootComponent());
-        if (PrimComp == nullptr)
+      UPrimitiveComponent* primComp = Cast<UPrimitiveComponent>(getPawn()->GetRootComponent());
+      if (primComp)
+        if (primComp == nullptr)
         {
-            UE_LOG(LogTemp, Warning, TEXT("PrimComp nullptr"))
+            UE_LOG(LogTemp, Warning, TEXT("PrimComp nullptr"));
             return;
         }
-        // Set position and rotation
-        PrimComp->SetWorldLocation(toFVector(state.pose.position));
-        PrimComp->SetWorldRotation(toQuaternion(state.pose.orientation));
 
         // Set linear and angular velocity
-        PrimComp->SetPhysicsLinearVelocity(toFVector(state.twist.linear), false);
-        PrimComp->SetPhysicsAngularVelocityInDegrees(toFVector(state.twist.angular), false);
+        primComp->SetPhysicsLinearVelocity(toFVector(state.twist.linear) * 100.);  // m -> cm
+        primComp->SetPhysicsAngularVelocityInRadians(toFVector(state.twist.angular));
 
-        // Force update physics state
-        PrimComp->SyncComponentToRBPhysics();
+        primComp->SyncComponentToRBPhysics();
     }, true);
 }
 
