@@ -50,6 +50,24 @@ struct FDetectionInfo
     }
 };
 
+USTRUCT()
+struct FSkeletalDetectionInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    FDetectionInfo DetectionInfo;
+
+    UPROPERTY()
+    TMap<FName, FVector2D> Bones;
+
+    FSkeletalDetectionInfo():
+        DetectionInfo()
+        , Bones()
+    {
+    }
+};
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class AIRSIM_API UDetectionComponent : public USceneComponent
 {
@@ -68,14 +86,16 @@ public:
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
     const TArray<FDetectionInfo>& getDetections(TMap<UMeshComponent*, FString>  component_to_name_map, bool component_based = true);
+    const TArray<FSkeletalDetectionInfo>& getSkeletalDetections(TMap<UMeshComponent*, FString>  component_to_name_map, bool component_based = true);
 
     void addMeshName(const std::string& mesh_name);
     void setFilterRadius(const float radius_cm);
     void clearMeshNames();
 
 private:
-    bool calcBoundingFromViewInfo(AActor* actor, FBox2D& box_out);
-    bool calcBoundingFromViewInfoComponent(UMeshComponent* component, FBox2D& box_out);
+    FSceneViewProjectionData getProjectionData();
+    bool calcBoundingFromViewInfo(AActor* actor, FBox2D& box_out, const FMatrix& viewProjectionMatrix);
+    bool calcBoundingFromViewInfoComponent(UMeshComponent* component, FBox2D& box_out, const FMatrix& viewProjectionMatrix);
 
     FVector getRelativeLocation(FVector in_location);
 
@@ -97,4 +117,7 @@ private:
 
     UPROPERTY()
     TArray<FDetectionInfo> cached_detections_;
+
+    UPROPERTY()
+    TArray<FSkeletalDetectionInfo> cached_skeletal_detections_;
 };

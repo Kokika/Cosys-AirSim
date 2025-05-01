@@ -318,6 +318,21 @@ namespace airlib
         }
     };
 
+    struct SkeletalDetectionInfo
+    {
+      DetectionInfo info;
+      std::unordered_map<string, Vector2r> bones;
+
+      SkeletalDetectionInfo()
+      {
+      }
+
+      SkeletalDetectionInfo(const DetectionInfo& info_val, const std::unordered_map<string, Vector2r>& bones_val)
+        : info(info_val), bones(bones_val)
+      {
+      }
+    };
+
     struct CollisionResponse
     {
         unsigned int collision_count_raw = 0;

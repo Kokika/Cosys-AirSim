@@ -140,6 +140,7 @@ public:
     virtual void setDetectionFilterRadius(ImageCaptureBase::ImageType image_type, float radius_cm, const CameraDetails& camera_details, const std::string& annotation_name) override;
     virtual void clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
     virtual std::vector<msr::airlib::DetectionInfo> getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
+    virtual std::vector<msr::airlib::SkeletalDetectionInfo> getSkeletalDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
 
 private:
     AActor* createNewStaticMeshActor(const FActorSpawnParameters& spawn_params, const FTransform& actor_transform, const Vector3r& scale, UStaticMesh* static_mesh);
@@ -149,4 +150,6 @@ private:
 private:
     ASimModeBase* simmode_;
     std::vector<bool> voxel_grid_;
+
+    static msr::airlib::DetectionInfo convert(const FDetectionInfo& detection, const NedTransform& ned_transform);
 };

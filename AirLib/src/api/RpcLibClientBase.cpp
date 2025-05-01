@@ -308,6 +308,11 @@ __pragma(warning(disable : 4239))
             const auto& result = pimpl_->client.call("simGetDetections", camera_name, image_type, vehicle_name, annotation_name).as<vector<RpcLibAdaptorsBase::DetectionInfo>>();
             return RpcLibAdaptorsBase::DetectionInfo::to(result);
         }
+        vector<SkeletalDetectionInfo> RpcLibClientBase::simGetSkeletalDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& vehicle_name, const std::string& annotation_name)
+        {
+          const auto& result = pimpl_->client.call("simGetSkeletalDetections", camera_name, image_type, vehicle_name, annotation_name).as<vector<RpcLibAdaptorsBase::SkeletalDetectionInfo>>();
+          return RpcLibAdaptorsBase::SkeletalDetectionInfo::to(result);
+        }
 
         CollisionInfo RpcLibClientBase::simGetCollisionInfo(const std::string& vehicle_name) const
         {

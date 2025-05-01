@@ -1100,44 +1100,79 @@ void WorldSimApi::clearDetectionMeshNames(ImageCaptureBase::ImageType image_type
                                              true);
 }
 
-std::vector<msr::airlib::DetectionInfo> WorldSimApi::getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name)
+msr::airlib::DetectionInfo WorldSimApi::convert(const FDetectionInfo& detection, const NedTransform& ned_transform)
 {
-    std::vector<msr::airlib::DetectionInfo> result;
+    msr::airlib::DetectionInfo result;
 
-    const APIPCamera* camera = simmode_->getCamera(camera_details);
-    const NedTransform& ned_transform = simmode_->getVehicleSimApi(camera_details.vehicle_name)->getNedTransform();
-    TMap<UMeshComponent*, FString> component_to_name_map = simmode_->GetInstanceSegmentationComponentToNameMap();
-    UAirBlueprintLib::RunCommandOnGameThread([camera, image_type, component_to_name_map , &result, &ned_transform, annotation_name]() {
-        const TArray<FDetectionInfo>& detections = camera->getDetectionComponent(image_type, false, annotation_name)->getDetections(component_to_name_map);
-        result.resize(detections.Num());
+    result.name = std::string(TCHAR_TO_UTF8(*(detection.DetectionName)));
+    Vector3r nedWrtOrigin;
+    if (detection.Component != nullptr)
+    {
+        nedWrtOrigin = ned_transform.toGlobalNed(detection.Component->GetComponentLocation());
+    }
+    else
+    {
+        nedWrtOrigin = ned_transform.toGlobalNed(detection.Actor->GetActorLocation());
+    }
+    result.geo_point = msr::airlib::EarthUtils::nedToGeodetic(nedWrtOrigin,
+        AirSimSettings::singleton().origin_geopoint);
 
-        for (int i = 0; i < detections.Num(); i++) {
-            result[i].name = std::string(TCHAR_TO_UTF8(*(detections[i].DetectionName)));
-            Vector3r nedWrtOrigin;
-            if(detections[i].Component != nullptr)
-			{
-                nedWrtOrigin = ned_transform.toGlobalNed(detections[i].Component->GetComponentLocation());
-			}
-			else
-			{
-                nedWrtOrigin = ned_transform.toGlobalNed(detections[i].Actor->GetActorLocation());
-			}
-            result[i].geo_point = msr::airlib::EarthUtils::nedToGeodetic(nedWrtOrigin,
-                                                                         AirSimSettings::singleton().origin_geopoint);
+    result.box2D.min = Vector2r(detection.Box2D.Min.X, detection.Box2D.Min.Y);
+    result.box2D.max = Vector2r(detection.Box2D.Max.X, detection.Box2D.Max.Y);
 
-            result[i].box2D.min = Vector2r(detections[i].Box2D.Min.X, detections[i].Box2D.Min.Y);
-            result[i].box2D.max = Vector2r(detections[i].Box2D.Max.X, detections[i].Box2D.Max.Y);
+    result.box3D.min = ned_transform.toLocalNed(detection.Box3D.Min);
+    result.box3D.max = ned_transform.toLocalNed(detection.Box3D.Max);
 
-            result[i].box3D.min = ned_transform.toLocalNed(detections[i].Box3D.Min);
-            result[i].box3D.max = ned_transform.toLocalNed(detections[i].Box3D.Max);
+    const Vector3r& position = ned_transform.toLocalNed(detection.RelativeTransform.GetTranslation());
+    const Quaternionr& orientation = ned_transform.toNed(detection.RelativeTransform.GetRotation());
 
-            const Vector3r& position = ned_transform.toLocalNed(detections[i].RelativeTransform.GetTranslation());
-            const Quaternionr& orientation = ned_transform.toNed(detections[i].RelativeTransform.GetRotation());
-
-            result[i].relative_pose = Pose(position, orientation);
-        }
-    },
-                                             true);
+    result.relative_pose = Pose(position, orientation);
 
     return result;
+}
+
+std::vector<msr::airlib::DetectionInfo> WorldSimApi::getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name)
+{
+  std::vector<msr::airlib::DetectionInfo> result;
+
+  const APIPCamera* camera = simmode_->getCamera(camera_details);
+  const NedTransform& ned_transform = simmode_->getVehicleSimApi(camera_details.vehicle_name)->getNedTransform();
+  TMap<UMeshComponent*, FString> component_to_name_map = simmode_->GetInstanceSegmentationComponentToNameMap();
+  UAirBlueprintLib::RunCommandOnGameThread([camera, image_type, component_to_name_map, &result, &ned_transform, annotation_name]() {
+    const TArray<FDetectionInfo>& detections = camera->getDetectionComponent(image_type, false, annotation_name)->getDetections(component_to_name_map);
+    result.resize(detections.Num());
+
+    for (int i = 0; i < detections.Num(); i++) {
+        result[i] = convert(detections[i], ned_transform);
+    }
+    },
+    true);
+
+  return result;
+}
+
+std::vector<msr::airlib::SkeletalDetectionInfo> WorldSimApi::getSkeletalDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name)
+{
+  std::vector<msr::airlib::SkeletalDetectionInfo> result;
+
+  const APIPCamera* camera = simmode_->getCamera(camera_details);
+  const NedTransform& ned_transform = simmode_->getVehicleSimApi(camera_details.vehicle_name)->getNedTransform();
+  TMap<UMeshComponent*, FString> component_to_name_map = simmode_->GetInstanceSegmentationComponentToNameMap();
+  UAirBlueprintLib::RunCommandOnGameThread([camera, image_type, component_to_name_map, &result, &ned_transform, annotation_name]() {
+    const TArray<FSkeletalDetectionInfo>& detections = camera->getDetectionComponent(image_type, false, annotation_name)->getSkeletalDetections(component_to_name_map);
+    result.resize(detections.Num());
+
+    for (int i = 0; i < detections.Num(); i++) {
+        result[i].info = convert(detections[i].DetectionInfo, ned_transform);
+
+        for (const auto& Elem : detections[i].Bones) {
+            std::string Key = TCHAR_TO_UTF8(*Elem.Key.ToString());
+            Vector2r Point(Elem.Value.X, Elem.Value.Y);
+            result[i].bones.emplace(Key, Point);
+        }
+    }
+    },
+    true);
+
+  return result;
 }
