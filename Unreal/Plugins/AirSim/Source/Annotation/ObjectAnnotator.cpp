@@ -98,27 +98,33 @@ void FObjectAnnotator::getPaintableComponentMeshes(AActor* actor, TMap<FString, 
 		}
 		else {
 			FString component_name;
+			component_name = actor->GetName();
 			if (UStaticMeshComponent* staticmesh_component = Cast<UStaticMeshComponent>(component)) {
 				if (staticmesh_component->GetStaticMesh() != nullptr) {
 					component_name = staticmesh_component->GetStaticMesh()->GetName();
-					component_name.Append("_");
-					component_name.Append(FString::FromInt(index));
-					component_name.Append("_");
-					if (actor->GetParentActor()) {
-						if (actor->GetRootComponent()->GetAttachParent()) {
-							component_name.Append(actor->GetRootComponent()->GetAttachParent()->GetName());
-							component_name.Append("_");
-						}
-						component_name.Append(actor->GetParentActor()->GetName());
-					}
-					else {
-						component_name.Append(actor->GetName());
-					}
+				}
+				else {
+					component_name = staticmesh_component->GetName();
 				}
 			}
 			if (USkinnedMeshComponent* skinnedmesh_component = Cast<USkinnedMeshComponent>(component)) {
-				component_name = actor->GetName();
+				component_name = skinnedmesh_component->GetName();
 			}
+
+			component_name.Append("_");
+			component_name.Append(FString::FromInt(index));
+			component_name.Append("_");
+			if (actor->GetParentActor()) {
+				if (actor->GetRootComponent()->GetAttachParent()) {
+					component_name.Append(actor->GetRootComponent()->GetAttachParent()->GetName());
+					component_name.Append("_");
+				}
+				component_name.Append(actor->GetParentActor()->GetName());
+			}
+			else {
+				component_name.Append(actor->GetName());
+			}
+
 			paintable_components_meshes->Emplace(component_name, component);
 			index++;
 		}
@@ -127,6 +133,11 @@ void FObjectAnnotator::getPaintableComponentMeshes(AActor* actor, TMap<FString, 
 
 void FObjectAnnotator::getPaintableComponentMeshesAndTags(AActor* actor, TMap<FString, UMeshComponent*>* paintable_components_meshes, TMap<FString, TArray<FName>>* paintable_components_tags)
 {
+	if (actor && actor->GetFName() == FName("CC_Rig_BP_C_6"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found actor with matching name: %s"), *actor->GetName());
+	}
+
 	TArray<UMeshComponent*> paintable_components;
 	actor->GetComponents<UMeshComponent>(paintable_components);
 	int index = 0;
@@ -408,6 +419,11 @@ bool FObjectAnnotator::AnnotateNewActor(AActor* actor)
 }
 
 bool FObjectAnnotator::AnnotateNewActorInstanceSegmentation(AActor* actor) {
+	if (actor && actor->GetFName() == FName("CC_Rig_BP_C_6"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found actor with matching name: %s"), *actor->GetName());
+	}
+
 	if (actor && IsPaintable(actor)) {
 		TMap<FString, UMeshComponent*> paintable_components_meshes;
 		TMap<FString, TArray<FName>> paintable_components_tags;
@@ -794,6 +810,11 @@ void FObjectAnnotator::InitializeInstanceSegmentation(ULevel* InLevel)
 			getPaintableComponentMeshes(actor, &paintable_components_meshes);
 			for (auto it = paintable_components_meshes.CreateConstIterator(); it; ++it)
 			{
+				if (it.Key().Contains("CC_Rig_BP_C_6"))
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Found actor with matching name: CC_Rig_BP_C_6"));
+				}
+
 				if(!it.Key().Contains("hidden_sphere") && !it.Key().Contains("AnnotationSphere")) {
 					name_to_component_map_.Emplace(it.Key(), it.Value());
 					component_to_name_map_.Emplace(it.Value(), it.Key());
