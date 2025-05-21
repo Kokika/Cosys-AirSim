@@ -176,8 +176,9 @@ const TArray<FSkeletalDetectionInfo>& UDetectionComponent::getSkeletalDetections
     for (TActorIterator<AActor> actor_itr(GetWorld()); actor_itr; ++actor_itr)
     {
         AActor* actor = *actor_itr;
-        ASkeletalMeshActor* skeletalMeshActor = Cast<ASkeletalMeshActor>(actor);
-        if (skeletalMeshActor == nullptr) continue;
+        USkeletalMeshComponent* skeletalMeshComponent = actor->FindComponentByClass<USkeletalMeshComponent>();
+
+        if (skeletalMeshComponent == nullptr) continue;
 
         if (!object_filter_.matchesActor(actor, component_based)) continue;
 
@@ -198,7 +199,6 @@ const TArray<FSkeletalDetectionInfo>& UDetectionComponent::getSkeletalDetections
             getRelativeLocation(actor->GetActorLocation()));
 
         FIntRect screen_rect(0, 0, texture_target_->SizeX, texture_target_->SizeY);
-        USkeletalMeshComponent* skeletalMeshComponent = skeletalMeshActor->GetSkeletalMeshComponent();
         int32 numBones = skeletalMeshComponent->GetNumBones();
         for (int32 boneIndex = 0; boneIndex < numBones; ++boneIndex)
         {
@@ -315,7 +315,7 @@ bool UDetectionComponent::calcBoundingFromViewInfo(AActor* actor, FBox2D& box_ou
         bool is_world_hit;
         for (FVector& point : points)
         {
-            is_world_hit = GetWorld()->LineTraceSingleByChannel(result, GetComponentLocation(), point, ECC_WorldStatic);
+            is_world_hit = GetWorld()->LineTraceSingleByChannel(result, GetComponentLocation(), point, ECC_Visibility);
             if (is_world_hit)
             {
                 auto a = result.GetActor();
@@ -334,7 +334,7 @@ bool UDetectionComponent::calcBoundingFromViewInfo(AActor* actor, FBox2D& box_ou
             for (int i = 0; i < 10; i++)
             {
                 FVector point = UKismetMathLibrary::RandomPointInBoundingBox(origin, extend);
-                is_world_hit = GetWorld()->LineTraceSingleByChannel(result, GetComponentLocation(), point, ECC_WorldStatic);
+                is_world_hit = GetWorld()->LineTraceSingleByChannel(result, GetComponentLocation(), point, ECC_Visibility);
                 if (is_world_hit)
                 {
                     auto a = result.GetActor();
