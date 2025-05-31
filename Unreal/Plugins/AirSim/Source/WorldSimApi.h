@@ -141,6 +141,8 @@ public:
     virtual void clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
     virtual std::vector<msr::airlib::DetectionInfo> getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
     virtual std::vector<msr::airlib::SkeletalDetectionInfo> getSkeletalDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
+    virtual std::vector<std::string> listSkeletalMeshAssetPath(const std::string& folder) const override;
+    virtual bool setSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& mesh_names) override;
 
 private:
     AActor* createNewStaticMeshActor(const FActorSpawnParameters& spawn_params, const FTransform& actor_transform, const Vector3r& scale, UStaticMesh* static_mesh);

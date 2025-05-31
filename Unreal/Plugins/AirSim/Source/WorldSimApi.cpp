@@ -1176,3 +1176,71 @@ std::vector<msr::airlib::SkeletalDetectionInfo> WorldSimApi::getSkeletalDetectio
 
   return result;
 }
+
+std::vector<std::string> WorldSimApi::listSkeletalMeshAssetPath(const std::string& folder) const
+{
+    std::vector<std::string> result;
+    UAirBlueprintLib::RunCommandOnGameThread([&result, &folder]() {
+        FARFilter Filter;
+        Filter.ClassPaths.Add(USkeletalMesh::StaticClass()->GetClassPathName());
+        if (folder.size())
+        {
+            FString folderPath = UTF8_TO_TCHAR(folder.c_str());
+            Filter.PackagePaths.Add(*folderPath); // Specify the folder path
+        }
+        Filter.bRecursivePaths = true;
+
+        TArray<FAssetData> AssetData;
+
+        // Find mesh in /Game and /AirSim asset registry. When more plugins are added this function will have to change
+        FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+        AssetRegistryModule.Get().GetAssets(Filter, AssetData);
+
+        UObject* LoadObject = NULL;
+        for (const auto& asset : AssetData) {
+            FString asset_name = asset.PackageName.ToString();
+            result.push_back(TCHAR_TO_UTF8(*asset_name));
+        }
+        },
+        true);
+    return result;
+}
+
+bool WorldSimApi::setSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& asset_map)
+{
+    bool result = false;
+    UAirBlueprintLib::RunCommandOnGameThread([this, &object_name, &asset_map, &result]() {
+        AActor* actor = UAirBlueprintLib::FindActor<AActor>(simmode_, FString(object_name.c_str()));
+        if (!actor) return;
+
+        TArray<UMeshComponent*> paintable_components;
+        actor->GetComponents<UMeshComponent>(paintable_components);
+        for (auto component : paintable_components)
+        {
+            if (!component->IsA<USkeletalMeshComponent>()) continue;
+
+            USkeletalMeshComponent* skeletal_component = Cast<USkeletalMeshComponent>(component);
+            if (!skeletal_component) continue;
+
+            for (const auto& it : asset_map)
+            {
+                const std::string& component_name = std::get<0>(it);
+                const std::string& asset_path = std::get<1>(it);
+                if (component_name.empty() || component_name == TCHAR_TO_UTF8(*skeletal_component->GetName()))
+                {
+                    USkeletalMesh* mesh = LoadObject<USkeletalMesh>(nullptr, *FString(asset_path.c_str()));
+                    if (mesh)
+                    {
+                        skeletal_component->SetSkeletalMesh(mesh);
+                        result = true;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        },
+        true);
+    return result;
+}

@@ -573,8 +573,8 @@ const msr::airlib::Kinematics::State* PawnSimApi::getGroundTruthKinematics() con
 
 void PawnSimApi::setKinematics(const Kinematics::State& state, bool ignore_collision)
 {
-    unused(ignore_collision);
-
+    unused(ignore_collision);    
+	
     return kinematics_->setState(state);
 }
 
@@ -637,7 +637,7 @@ void PawnSimApi::setPhysicsRawKinematics(const Kinematics::State& state)
         primComp->SetPhysicsAngularVelocityInRadians(toFVector(state.twist.angular));
 
         primComp->SyncComponentToRBPhysics();
-    }, true);
+      }, true);
 }
 
 const msr::airlib::Environment* PawnSimApi::getGroundTruthEnvironment() const

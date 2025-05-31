@@ -320,13 +320,20 @@ namespace airlib
             getWorldSimApi()->clearDetectionMeshNames(type, CameraDetails(camera_name, vehicle_name), annotation_name);
         });
         pimpl_->server.bind("simGetDetections", [&](const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name, const std::string& annotation_name) -> vector<RpcLibAdaptorsBase::DetectionInfo> {
-          const auto& response = getWorldSimApi()->getDetections(type, CameraDetails(camera_name, vehicle_name), annotation_name);
-          return RpcLibAdaptorsBase::DetectionInfo::from(response);
+            const auto& response = getWorldSimApi()->getDetections(type, CameraDetails(camera_name, vehicle_name), annotation_name);
+            return RpcLibAdaptorsBase::DetectionInfo::from(response);
         });
         pimpl_->server.bind("simGetSkeletalDetections", [&](const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name, const std::string& annotation_name) -> vector<RpcLibAdaptorsBase::SkeletalDetectionInfo> {
-          const auto& response = getWorldSimApi()->getSkeletalDetections(type, CameraDetails(camera_name, vehicle_name), annotation_name);
-          return RpcLibAdaptorsBase::SkeletalDetectionInfo::from(response);
+            const auto& response = getWorldSimApi()->getSkeletalDetections(type, CameraDetails(camera_name, vehicle_name), annotation_name);
+            return RpcLibAdaptorsBase::SkeletalDetectionInfo::from(response);
         });
+        pimpl_->server.bind("simListSkeletalMeshAssetPath", [&](const std::string& folder) -> std::vector<std::string> {
+            return getWorldSimApi()->listSkeletalMeshAssetPath(folder);
+        });
+        pimpl_->server.bind("simSetSkeletalMesh", [&](const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& mesh_names) -> bool {
+            return getWorldSimApi()->setSkeletalMesh(object_name, mesh_names);
+        });
+
         pimpl_->server.bind("reset", [&]() -> void {
             //Exit if already resetting.
             static bool resetInProgress;

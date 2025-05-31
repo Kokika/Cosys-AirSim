@@ -6,6 +6,7 @@
 
 #include "common/CommonStructs.hpp"
 #include "common/ImageCaptureBase.hpp"
+#include "tuple"
 
 namespace msr
 {
@@ -146,6 +147,8 @@ namespace airlib
         virtual void clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) = 0;
         virtual std::vector<DetectionInfo> getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) = 0;
         virtual std::vector<SkeletalDetectionInfo> getSkeletalDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) = 0;
+        virtual std::vector<std::string> listSkeletalMeshAssetPath(const std::string& folder) const = 0;
+        virtual bool setSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& asset_map) = 0;
     };
 }
 } //namespace

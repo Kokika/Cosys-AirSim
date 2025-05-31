@@ -313,10 +313,18 @@ __pragma(warning(disable : 4239))
           const auto& result = pimpl_->client.call("simGetSkeletalDetections", camera_name, image_type, vehicle_name, annotation_name).as<vector<RpcLibAdaptorsBase::SkeletalDetectionInfo>>();
           return RpcLibAdaptorsBase::SkeletalDetectionInfo::to(result);
         }
-
         CollisionInfo RpcLibClientBase::simGetCollisionInfo(const std::string& vehicle_name) const
         {
             return pimpl_->client.call("simGetCollisionInfo", vehicle_name).as<RpcLibAdaptorsBase::CollisionInfo>().to();
+        }
+        std::vector<std::string> RpcLibClientBase::simListSkeletalMeshAssetPath(const std::string& folder) const
+        {
+            return pimpl_->client.call("simListSkeletalMeshAssetPath", folder).as<std::vector<std::string>>();
+        }
+
+        bool RpcLibClientBase::simSetSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& asset_map)
+        {
+            return pimpl_->client.call("simSetSkeletalMesh", object_name, asset_map).as<bool>();
         }
 
         //sim only
