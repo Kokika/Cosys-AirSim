@@ -573,8 +573,8 @@ const msr::airlib::Kinematics::State* PawnSimApi::getGroundTruthKinematics() con
 
 void PawnSimApi::setKinematics(const Kinematics::State& state, bool ignore_collision)
 {
-    unused(ignore_collision);    
-	
+    setPose(state.pose, ignore_collision);
+
     return kinematics_->setState(state);
 }
 
