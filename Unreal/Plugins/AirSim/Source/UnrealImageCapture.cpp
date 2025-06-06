@@ -70,6 +70,8 @@ void UnrealImageCapture::getSceneCaptureImage(const std::vector<msr::airlib::Ima
         ImageResponse& response = responses.at(i);          
         UTextureRenderTarget2D* textureTarget = nullptr;
         USceneCaptureComponent2D* capture = nullptr;
+        bool is_float16_pixels = false;
+        bool is_bgr = false;
         if (requests[i].image_type == ImageType::Annotation) {
             if (camera->GetAnnotationNameExist(requests[i].annotation_name)) {
                 capture = camera->getCaptureComponent(requests[i].image_type, false, requests[i].annotation_name);
@@ -96,11 +98,15 @@ void UnrealImageCapture::getSceneCaptureImage(const std::vector<msr::airlib::Ima
             }
             else
                 textureTarget = capture->TextureTarget;
+
+            is_bgr = requests[i].annotation_name.find('b') != std::string::npos;
+            is_float16_pixels = requests[i].annotation_name.find('f') != std::string::npos;
         }
         
         bool disable_gamma = false;
         if (requests[i].image_type == ImageCaptureBase::ImageType::Segmentation || requests[i].image_type == ImageCaptureBase::ImageType::Annotation)disable_gamma = true;
-        render_params.push_back(std::make_shared<RenderRequest::RenderParams>(capture, textureTarget, requests[i].pixels_as_float, requests[i].compress, disable_gamma));
+        render_params.push_back(std::make_shared<RenderRequest::RenderParams>(capture, textureTarget,
+            requests[i].pixels_as_float, requests[i].compress, disable_gamma, is_bgr, is_float16_pixels));
     }
 
     if (nullptr == gameViewport) {

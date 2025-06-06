@@ -18,9 +18,18 @@ public:
         bool pixels_as_float;
         bool compress;
         bool disable_gamma;
+        bool is_bgr;
+        bool is_float16_pixels;
 
-        RenderParams(USceneCaptureComponent2D * render_component_val, UTextureRenderTarget2D* render_target_val, bool pixels_as_float_val, bool compress_val, bool disable_gamma_val)
-            : render_component(render_component_val), render_target(render_target_val), pixels_as_float(pixels_as_float_val), compress(compress_val), disable_gamma(disable_gamma_val)
+        RenderParams(USceneCaptureComponent2D* render_component_val, UTextureRenderTarget2D* render_target_val,
+            bool pixels_as_float_val, bool compress_val, bool disable_gamma_val, bool bgr = false, bool float16_pixels = false) :
+            render_component(render_component_val), 
+            render_target(render_target_val), 
+            pixels_as_float(pixels_as_float_val),
+            compress(compress_val), 
+            disable_gamma(disable_gamma_val),
+            is_bgr(bgr),
+            is_float16_pixels(float16_pixels)
         {
         }
     };

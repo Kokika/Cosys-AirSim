@@ -114,19 +114,39 @@ void RenderRequest::getScreenshot(std::shared_ptr<RenderParams> params[], std::v
                         UAirBlueprintLib::CompressImageArray(results[i]->width, results[i]->height, results[i]->bmp, results[i]->image_data_uint8);
                     else {
                         uint8* ptr = results[i]->image_data_uint8.GetData();
-                        for (const auto& item : results[i]->bmp) {
-                            *ptr++ = item.R;
-                            *ptr++ = item.G;
-                            *ptr++ = item.B;
+                        if (params[i]->is_bgr) {
+                            for (const auto& item : results[i]->bmp) {
+                                *ptr++ = item.B;
+                                *ptr++ = item.G;
+                                *ptr++ = item.R;
+                            }
+                        }
+                        else {
+                            for (const auto& item : results[i]->bmp) {
+                                *ptr++ = item.R;
+                                *ptr++ = item.G;
+                                *ptr++ = item.B;
+                            }
                         }
                     }
                 }
             }
             else {
-                results[i]->image_data_float.SetNumUninitialized(results[i]->width * results[i]->height);
-                float* ptr = results[i]->image_data_float.GetData();
-                for (const auto& item : results[i]->bmp_float) {
-                    *ptr++ = item.R.GetFloat();
+                if (params[i]->is_float16_pixels)
+                {
+                    int size = results[i]->width * results[i]->height;
+                    results[i]->image_data_float.SetNumUninitialized(size / 2 + (size & 1));
+                    uint16* ptr = reinterpret_cast<uint16*>(results[i]->image_data_float.GetData());
+                    for (const auto& item : results[i]->bmp_float) {
+                        *ptr++ = item.R.Encoded;
+                    }
+                }
+                else {
+                    results[i]->image_data_float.SetNumUninitialized(results[i]->width * results[i]->height);
+                    float* ptr = results[i]->image_data_float.GetData();
+                    for (const auto& item : results[i]->bmp_float) {
+                        *ptr++ = item.R.GetFloat();
+                    }
                 }
             }
         }
