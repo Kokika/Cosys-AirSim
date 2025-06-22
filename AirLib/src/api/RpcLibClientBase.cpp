@@ -313,7 +313,7 @@ __pragma(warning(disable : 4239))
           const auto& result = pimpl_->client.call("simGetSkeletalDetections", camera_name, image_type, vehicle_name, annotation_name).as<vector<RpcLibAdaptorsBase::SkeletalDetectionInfo>>();
           return RpcLibAdaptorsBase::SkeletalDetectionInfo::to(result);
         }
-        unordered_map<string, Vector3r> RpcLibClientBase::simGetSkeletalBones(const std::string& actor_name)
+        unordered_map<string, Vector3r> RpcLibClientBase::simGetSkeletalBones(const std::string& actor_name) const
         {
             const auto& result = pimpl_->client.call("simGetSkeletalBones", actor_name).as<std::unordered_map<std::string, RpcLibAdaptorsBase::Vector3r>>();
             return RpcLibAdaptorsBase::to(result);
