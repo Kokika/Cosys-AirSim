@@ -313,6 +313,11 @@ __pragma(warning(disable : 4239))
           const auto& result = pimpl_->client.call("simGetSkeletalDetections", camera_name, image_type, vehicle_name, annotation_name).as<vector<RpcLibAdaptorsBase::SkeletalDetectionInfo>>();
           return RpcLibAdaptorsBase::SkeletalDetectionInfo::to(result);
         }
+        unordered_map<string, Vector3r> RpcLibClientBase::simGetSkeletalBones(const std::string& actor_name)
+        {
+            const auto& result = pimpl_->client.call("simGetSkeletalBones", actor_name).as<std::unordered_map<std::string, RpcLibAdaptorsBase::Vector3r>>();
+            return RpcLibAdaptorsBase::to(result);
+        }
         CollisionInfo RpcLibClientBase::simGetCollisionInfo(const std::string& vehicle_name) const
         {
             return pimpl_->client.call("simGetCollisionInfo", vehicle_name).as<RpcLibAdaptorsBase::CollisionInfo>().to();
@@ -332,9 +337,9 @@ __pragma(warning(disable : 4239))
             return pimpl_->client.call("simSetAnimSequence", actor_name, anim_path).as<bool>();
         }
 
-        string RpcLibClientBase::simGetAnimSequence(const std::string& actor_name) const
+        string RpcLibClientBase::simGetObjectLabel(const std::string& actor_name) const
         {
-            return pimpl_->client.call("simGetAnimSequence", actor_name).as<string>();
+            return pimpl_->client.call("simGetObjectLabel", actor_name).as<string>();
         }
 
         bool RpcLibClientBase::simChangeActorMaterialSkeleton(const std::string& actor_name, const std::string& actor_source_name)

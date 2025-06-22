@@ -141,11 +141,12 @@ public:
     virtual void clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
     virtual std::vector<msr::airlib::DetectionInfo> getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
     virtual std::vector<msr::airlib::SkeletalDetectionInfo> getSkeletalDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) override;
+    virtual std::unordered_map<std::string, msr::airlib::Vector3r> getSkeletalBones(const std::string& actor_name) const override;
     
     virtual std::vector<std::string> listTypedAssetPath(const std::string& folder, WorldSimApiBase::TypedAsset type) const override;
     virtual bool setSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& mesh_names) override;
     virtual bool setAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop = true) override;
-    virtual std::string getAnimSequence(const std::string& actor_name) const override;
+    virtual std::string getObjectLabel(const std::string& actor_name) const override;
     virtual bool changeActorMaterialSkeleton(const std::string& actor_name, const std::string& actor_source_name) override;
 
 private:

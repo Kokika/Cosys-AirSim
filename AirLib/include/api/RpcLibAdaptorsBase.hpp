@@ -1324,6 +1324,26 @@ namespace airlib_rpclib
                 return response_adapter;
             }
         };
+
+        static std::unordered_map<std::string, RpcLibAdaptorsBase::Vector3r> from(
+            const std::unordered_map<std::string, msr::airlib::Vector3r>& bones)
+        {
+            std::unordered_map<std::string, msr::airlib_rpclib::RpcLibAdaptorsBase::Vector3r> bones_map;
+            for (const auto& bone : bones) {
+                bones_map[bone.first] = msr::airlib_rpclib::RpcLibAdaptorsBase::Vector3r(bone.second);
+            }
+            return bones_map;
+        }
+
+        static std::unordered_map<std::string, msr::airlib::Vector3r> to(
+            const std::unordered_map<std::string, RpcLibAdaptorsBase::Vector3r>& bones)
+        {
+            std::unordered_map<std::string, msr::airlib::Vector3r> bones_map;
+            for (const auto& bone : bones) {
+                bones_map[bone.first] = bone.second.to();
+            }
+            return bones_map;
+        }
     };
 }
 } //namespace

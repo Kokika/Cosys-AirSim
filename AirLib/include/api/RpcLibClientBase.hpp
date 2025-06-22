@@ -99,11 +99,12 @@ namespace airlib
         void simClearDetectionMeshNames(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "", const std::string& annotation_name = "");
         vector<DetectionInfo> simGetDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& vehicle_name = "", const std::string& annotation_name = "");
         vector<SkeletalDetectionInfo> simGetSkeletalDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& vehicle_name = "", const std::string& annotation_name = "");
+        unordered_map<string, Vector3r> simGetSkeletalBones(const std::string& actor_name) const;
         
         std::vector<std::string> simListTypedAssetPath(const std::string& folder, WorldSimApiBase::TypedAsset type) const;
         bool simSetSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& asset_map);
         bool simSetAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop = true);
-        string simGetAnimSequence(const std::string& actor_name) const;
+        string simGetObjectLabel(const std::string& actor_name) const;
         bool simChangeActorMaterialSkeleton(const std::string& actor_name, const std::string& actor_source_name);
 
         void simFlushPersistentMarkers();

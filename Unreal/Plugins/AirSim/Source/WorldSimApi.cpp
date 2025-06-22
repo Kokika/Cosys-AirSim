@@ -1177,6 +1177,32 @@ std::vector<msr::airlib::SkeletalDetectionInfo> WorldSimApi::getSkeletalDetectio
   return result;
 }
 
+std::unordered_map<std::string, msr::airlib::Vector3r> WorldSimApi::getSkeletalBones(const std::string& actor_name) const
+{
+    std::unordered_map<std::string, msr::airlib::Vector3r> result;
+
+    UAirBlueprintLib::RunCommandOnGameThread([this, &actor_name, &result]() {
+        AActor* actor = simmode_->scene_object_map.FindRef(FString(actor_name.c_str()));
+        if (actor) {
+            USkeletalMeshComponent* skeletal_component = Cast<USkeletalMeshComponent>(actor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+            if (skeletal_component) {
+                int32 numBones = skeletal_component->GetNumBones();
+
+                for (int32 boneIndex = 0; boneIndex < numBones; ++boneIndex)
+                {
+                    FName boneName = skeletal_component->GetBoneName(boneIndex);
+                    FVector boneLocation = skeletal_component->GetBoneLocation(boneName);
+                    auto pose = simmode_->getGlobalNedTransform().toGlobalNed(FTransform(FRotator{}, boneLocation));
+                    result[TCHAR_TO_UTF8(*boneName.ToString())] = pose.position;
+                }
+            }
+        }
+        },
+        true);
+
+    return result;
+}
+
 std::vector<std::string> WorldSimApi::listTypedAssetPath(const std::string& folder, WorldSimApiBase::TypedAsset type) const
 {
     std::vector<std::string> result;
@@ -1269,12 +1295,12 @@ bool WorldSimApi::setAnimSequence(const std::string& object_name, const std::str
 {
     bool result = false;
     UAirBlueprintLib::RunCommandOnGameThread([this, &object_name, &anim_path, &loop, &result]() {
-        // AActor* actor = UAirBlueprintLib::FindActor<AActor>(simmode_, FString(object_name.c_str()));
         AActor* actor = simmode_->scene_object_map.FindRef(FString(object_name.c_str()));
         if (actor) {
             USkeletalMeshComponent* skeletal_component = Cast<USkeletalMeshComponent>(actor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
             if (skeletal_component) {
                 UAnimSequenceBase* anim_sequence = LoadObject<UAnimSequenceBase>(nullptr, *FString(anim_path.c_str()));
+                int32 frames = anim_sequence->GetNumberOfFrames();
                 if (anim_sequence) {
                     skeletal_component->PlayAnimation(anim_sequence, loop);
                     result = true;
@@ -1286,7 +1312,7 @@ bool WorldSimApi::setAnimSequence(const std::string& object_name, const std::str
     return result;
 }
 
-std::string WorldSimApi::getAnimSequence(const std::string& object_name) const
+std::string WorldSimApi::getObjectLabel(const std::string& object_name) const
 {
     std::string result;
     UAirBlueprintLib::RunCommandOnGameThread([this, &object_name, &result]() {
