@@ -28,6 +28,14 @@ namespace airlib
             Fog = 7,
             Enabled = 8
         };
+        enum class TypedAsset
+        {
+            StaticMesh = 0,
+            SkeletalMesh = 1,
+            AnimSequence = 2,
+            Material = 3,
+            Texture = 4
+        };
 
         virtual ~WorldSimApiBase() = default;
 
@@ -147,8 +155,12 @@ namespace airlib
         virtual void clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) = 0;
         virtual std::vector<DetectionInfo> getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) = 0;
         virtual std::vector<SkeletalDetectionInfo> getSkeletalDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details, const std::string& annotation_name) = 0;
-        virtual std::vector<std::string> listSkeletalMeshAssetPath(const std::string& folder) const = 0;
+        
+        virtual std::vector<std::string> listTypedAssetPath(const std::string& folder, WorldSimApiBase::TypedAsset type) const = 0;
         virtual bool setSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& asset_map) = 0;
+        virtual bool setAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop = true) = 0;
+        virtual string getAnimSequence(const std::string& actor_name) const = 0;
+        virtual bool changeActorMaterialSkeleton(const std::string& actor_name, const std::string& actor_source_name) = 0;
     };
 }
 } //namespace

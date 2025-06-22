@@ -1177,12 +1177,32 @@ std::vector<msr::airlib::SkeletalDetectionInfo> WorldSimApi::getSkeletalDetectio
   return result;
 }
 
-std::vector<std::string> WorldSimApi::listSkeletalMeshAssetPath(const std::string& folder) const
+std::vector<std::string> WorldSimApi::listTypedAssetPath(const std::string& folder, WorldSimApiBase::TypedAsset type) const
 {
     std::vector<std::string> result;
-    UAirBlueprintLib::RunCommandOnGameThread([&result, &folder]() {
+    UAirBlueprintLib::RunCommandOnGameThread([&result, &folder, type]() {
         FARFilter Filter;
-        Filter.ClassPaths.Add(USkeletalMesh::StaticClass()->GetClassPathName());
+        switch (type)
+        {
+        case WorldSimApiBase::TypedAsset::StaticMesh:
+            Filter.ClassPaths.Add(UStaticMesh::StaticClass()->GetClassPathName());
+            break;
+        case WorldSimApiBase::TypedAsset::SkeletalMesh:
+            Filter.ClassPaths.Add(USkeletalMesh::StaticClass()->GetClassPathName());
+            break;
+        case WorldSimApiBase::TypedAsset::AnimSequence:
+            Filter.ClassPaths.Add(UAnimSequence::StaticClass()->GetClassPathName());
+            break;
+        case WorldSimApiBase::TypedAsset::Material:
+            Filter.ClassPaths.Add(UMaterialInstance::StaticClass()->GetClassPathName());
+            break;
+        case WorldSimApiBase::TypedAsset::Texture:
+            Filter.ClassPaths.Add(UTexture::StaticClass()->GetClassPathName());
+            break;
+        default:
+            UAirBlueprintLib::LogMessageString("Invalid asset type specified for listTypedAssetPath", "", LogDebugLevel::Failure);
+            return;
+        }
         if (folder.size())
         {
             FString folderPath = UTF8_TO_TCHAR(folder.c_str());
@@ -1240,6 +1260,78 @@ bool WorldSimApi::setSkeletalMesh(const std::string& object_name, const std::vec
             }
         }
 
+        },
+        true);
+    return result;
+}
+
+bool WorldSimApi::setAnimSequence(const std::string& object_name, const std::string& anim_path, bool loop)
+{
+    bool result = false;
+    UAirBlueprintLib::RunCommandOnGameThread([this, &object_name, &anim_path, &loop, &result]() {
+        // AActor* actor = UAirBlueprintLib::FindActor<AActor>(simmode_, FString(object_name.c_str()));
+        AActor* actor = simmode_->scene_object_map.FindRef(FString(object_name.c_str()));
+        if (actor) {
+            USkeletalMeshComponent* skeletal_component = Cast<USkeletalMeshComponent>(actor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+            if (skeletal_component) {
+                UAnimSequenceBase* anim_sequence = LoadObject<UAnimSequenceBase>(nullptr, *FString(anim_path.c_str()));
+                if (anim_sequence) {
+                    skeletal_component->PlayAnimation(anim_sequence, loop);
+                    result = true;
+                }
+            }
+        }
+        },
+        true);
+    return result;
+}
+
+std::string WorldSimApi::getAnimSequence(const std::string& object_name) const
+{
+    std::string result;
+    UAirBlueprintLib::RunCommandOnGameThread([this, &object_name, &result]() {
+        // AActor* actor = UAirBlueprintLib::FindActor<AActor>(simmode_, FString(object_name.c_str()));
+        AActor* actor = simmode_->scene_object_map.FindRef(FString(object_name.c_str()));
+        if (actor) {
+
+            FString EditorName = actor->GetActorLabel();
+            result = TCHAR_TO_UTF8(*EditorName);
+        }
+        },
+        true);
+    return result;
+}
+
+bool WorldSimApi::changeActorMaterialSkeleton(const std::string& object_name, const std::string& actor_source_name)
+{
+    bool result = false;
+    UAirBlueprintLib::RunCommandOnGameThread([this, &object_name, &actor_source_name, &result]() {
+        // AActor* actor = UAirBlueprintLib::FindActor<AActor>(simmode_, FString(object_name.c_str()));
+        AActor* actor = simmode_->scene_object_map.FindRef(FString(object_name.c_str()));
+        // AActor* actor_source = UAirBlueprintLib::FindActor<AActor>(simmode_, FString(actor_source_name.c_str()));
+        AActor* actor_source = simmode_->scene_object_map.FindRef(FString(actor_source_name.c_str()));
+
+        if (actor && actor_source) {
+            USkeletalMeshComponent* skeletal_component = Cast<USkeletalMeshComponent>(actor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+            USkeletalMeshComponent* skeletal_component_source = Cast<USkeletalMeshComponent>(actor_source->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+            if (skeletal_component && skeletal_component_source) {
+                //skeletal_component->SetAnimInstanceClass(skeletal_component_source->GetAnimInstance()->GetClass());
+                int32 MaterialCount = skeletal_component_source->GetNumMaterials();
+                for (int32 i = 0; i < MaterialCount; ++i)
+                {
+                    UMaterialInterface* material = skeletal_component_source->GetMaterial(i);
+                    if (material)
+                    {
+                        skeletal_component->SetMaterial(i, material);
+                    }
+                }
+                result = true;
+                skeletal_component->SetSkeletalMesh(skeletal_component_source->SkeletalMesh);
+            }
+        }
+        else {
+            result = false;
+        }
         },
         true);
     return result;

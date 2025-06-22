@@ -327,11 +327,21 @@ namespace airlib
             const auto& response = getWorldSimApi()->getSkeletalDetections(type, CameraDetails(camera_name, vehicle_name), annotation_name);
             return RpcLibAdaptorsBase::SkeletalDetectionInfo::from(response);
         });
-        pimpl_->server.bind("simListSkeletalMeshAssetPath", [&](const std::string& folder) -> std::vector<std::string> {
-            return getWorldSimApi()->listSkeletalMeshAssetPath(folder);
+
+        pimpl_->server.bind("simListTypedAssetPath", [&](const std::string& folder, WorldSimApiBase::TypedAsset type) -> std::vector<std::string> {
+            return getWorldSimApi()->listTypedAssetPath(folder, type);
         });
         pimpl_->server.bind("simSetSkeletalMesh", [&](const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& mesh_names) -> bool {
             return getWorldSimApi()->setSkeletalMesh(object_name, mesh_names);
+        });
+        pimpl_->server.bind("simSetAnimSequence", [&](const std::string& actor_name, const std::string& mesh_names, bool loop) -> bool {
+            return getWorldSimApi()->setAnimSequence(actor_name, mesh_names, loop);
+        });
+        pimpl_->server.bind("simGetAnimSequence", [&](const std::string& actor_name) -> std::string {
+            return getWorldSimApi()->getAnimSequence(actor_name);
+        });
+        pimpl_->server.bind("simChangeActorMaterialSkeleton", [&](const std::string& actor_name, const std::string& actor_source_name) -> bool {
+            return getWorldSimApi()->changeActorMaterialSkeleton(actor_name, actor_source_name);
         });
 
         pimpl_->server.bind("reset", [&]() -> void {

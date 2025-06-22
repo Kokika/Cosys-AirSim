@@ -317,14 +317,29 @@ __pragma(warning(disable : 4239))
         {
             return pimpl_->client.call("simGetCollisionInfo", vehicle_name).as<RpcLibAdaptorsBase::CollisionInfo>().to();
         }
-        std::vector<std::string> RpcLibClientBase::simListSkeletalMeshAssetPath(const std::string& folder) const
+        std::vector<std::string> RpcLibClientBase::simListTypedAssetPath(const std::string& folder, WorldSimApiBase::TypedAsset type) const
         {
-            return pimpl_->client.call("simListSkeletalMeshAssetPath", folder).as<std::vector<std::string>>();
+            return pimpl_->client.call("simListTypedAssetPath", folder, type).as<std::vector<std::string>>();
         }
 
         bool RpcLibClientBase::simSetSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& asset_map)
         {
             return pimpl_->client.call("simSetSkeletalMesh", object_name, asset_map).as<bool>();
+        }
+
+        bool RpcLibClientBase::simSetAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop)
+        {
+            return pimpl_->client.call("simSetAnimSequence", actor_name, anim_path).as<bool>();
+        }
+
+        string RpcLibClientBase::simGetAnimSequence(const std::string& actor_name) const
+        {
+            return pimpl_->client.call("simGetAnimSequence", actor_name).as<string>();
+        }
+
+        bool RpcLibClientBase::simChangeActorMaterialSkeleton(const std::string& actor_name, const std::string& actor_source_name)
+        {
+            return pimpl_->client.call("simChangeActorMaterialSkeleton", actor_name, actor_source_name).as<bool>();
         }
 
         //sim only
