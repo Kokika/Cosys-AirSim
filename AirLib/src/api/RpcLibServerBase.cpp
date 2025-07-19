@@ -338,7 +338,7 @@ namespace airlib
         pimpl_->server.bind("simSetSkeletalMesh", [&](const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& mesh_names) -> bool {
             return getWorldSimApi()->setSkeletalMesh(object_name, mesh_names);
         });
-        pimpl_->server.bind("simSetAnimSequence", [&](const std::string& actor_name, const std::string& mesh_names, bool loop) -> bool {
+        pimpl_->server.bind("simSetAnimSequence", [&](const std::string& actor_name, const std::string& mesh_names, bool loop) -> int {
             return getWorldSimApi()->setAnimSequence(actor_name, mesh_names, loop);
         });
         pimpl_->server.bind("simGetObjectLabel", [&](const std::string& actor_name) -> std::string {

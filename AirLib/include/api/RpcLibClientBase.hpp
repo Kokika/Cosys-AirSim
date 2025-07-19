@@ -103,7 +103,7 @@ namespace airlib
         
         std::vector<std::string> simListTypedAssetPath(const std::string& folder, WorldSimApiBase::TypedAsset type) const;
         bool simSetSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& asset_map);
-        bool simSetAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop = true);
+        int simSetAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop = true);
         string simGetObjectLabel(const std::string& actor_name) const;
         bool simChangeActorMaterialSkeleton(const std::string& actor_name, const std::string& actor_source_name);
 

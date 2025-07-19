@@ -332,9 +332,9 @@ __pragma(warning(disable : 4239))
             return pimpl_->client.call("simSetSkeletalMesh", object_name, asset_map).as<bool>();
         }
 
-        bool RpcLibClientBase::simSetAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop)
+        int RpcLibClientBase::simSetAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop)
         {
-            return pimpl_->client.call("simSetAnimSequence", actor_name, anim_path).as<bool>();
+            return pimpl_->client.call("simSetAnimSequence", actor_name, anim_path).as<int>();
         }
 
         string RpcLibClientBase::simGetObjectLabel(const std::string& actor_name) const
