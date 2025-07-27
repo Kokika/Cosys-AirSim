@@ -145,7 +145,7 @@ public:
     
     virtual std::vector<std::string> listTypedAssetPath(const std::string& folder, WorldSimApiBase::TypedAsset type) const override;
     virtual bool setSkeletalMesh(const std::string& object_name, const std::vector<std::tuple<std::string, std::string>>& mesh_names) override;
-    virtual bool setAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop = true) override;
+    virtual int setAnimSequence(const std::string& actor_name, const std::string& anim_path, bool loop = true) override;
     virtual std::string getObjectLabel(const std::string& actor_name) const override;
     virtual bool changeActorMaterialSkeleton(const std::string& actor_name, const std::string& actor_source_name) override;
 

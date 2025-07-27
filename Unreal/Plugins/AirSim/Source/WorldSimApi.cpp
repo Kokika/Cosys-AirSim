@@ -1291,25 +1291,24 @@ bool WorldSimApi::setSkeletalMesh(const std::string& object_name, const std::vec
     return result;
 }
 
-bool WorldSimApi::setAnimSequence(const std::string& object_name, const std::string& anim_path, bool loop)
+int WorldSimApi::setAnimSequence(const std::string& object_name, const std::string& anim_path, bool loop)
 {
-    bool result = false;
-    UAirBlueprintLib::RunCommandOnGameThread([this, &object_name, &anim_path, &loop, &result]() {
+    int frames = -1;
+    UAirBlueprintLib::RunCommandOnGameThread([this, &object_name, &anim_path, &loop, &frames]() {
         AActor* actor = simmode_->scene_object_map.FindRef(FString(object_name.c_str()));
         if (actor) {
             USkeletalMeshComponent* skeletal_component = Cast<USkeletalMeshComponent>(actor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
             if (skeletal_component) {
                 UAnimSequenceBase* anim_sequence = LoadObject<UAnimSequenceBase>(nullptr, *FString(anim_path.c_str()));
-                int32 frames = anim_sequence->GetNumberOfFrames();
                 if (anim_sequence) {
                     skeletal_component->PlayAnimation(anim_sequence, loop);
-                    result = true;
+                    frames = anim_sequence->GetNumberOfFrames();
                 }
             }
         }
         },
         true);
-    return result;
+    return frames;
 }
 
 std::string WorldSimApi::getObjectLabel(const std::string& object_name) const
@@ -1342,6 +1341,7 @@ bool WorldSimApi::changeActorMaterialSkeleton(const std::string& object_name, co
             USkeletalMeshComponent* skeletal_component_source = Cast<USkeletalMeshComponent>(actor_source->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
             if (skeletal_component && skeletal_component_source) {
                 //skeletal_component->SetAnimInstanceClass(skeletal_component_source->GetAnimInstance()->GetClass());
+                skeletal_component->SetSkeletalMesh(skeletal_component_source->SkeletalMesh);
                 int32 MaterialCount = skeletal_component_source->GetNumMaterials();
                 for (int32 i = 0; i < MaterialCount; ++i)
                 {
@@ -1352,7 +1352,6 @@ bool WorldSimApi::changeActorMaterialSkeleton(const std::string& object_name, co
                     }
                 }
                 result = true;
-                skeletal_component->SetSkeletalMesh(skeletal_component_source->SkeletalMesh);
             }
         }
         else {
