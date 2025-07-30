@@ -1971,13 +1971,15 @@ void ASimModeBase::setupVehiclesAndCamera()
         }
     }
 
-    if (getApiProvider()->hasDefaultVehicle()) {
-        //TODO: better handle no FPV vehicles scenario
-        getVehicleSimApi()->possess();
-        CameraDirector->initializeForBeginPlay(getInitialViewMode(), getVehicleSimApi()->getPawn(), getVehicleSimApi()->getCamera("fpv"), getVehicleSimApi()->getCamera("back_center"), nullptr);
+    if (getSettings().default_vehicle_possess) {
+        if (getApiProvider()->hasDefaultVehicle()) {
+            //TODO: better handle no FPV vehicles scenario
+            getVehicleSimApi()->possess();
+            CameraDirector->initializeForBeginPlay(getInitialViewMode(), getVehicleSimApi()->getPawn(), getVehicleSimApi()->getCamera("fpv"), getVehicleSimApi()->getCamera("back_center"), nullptr);
+        }
+        else
+            CameraDirector->initializeForBeginPlay(getInitialViewMode(), nullptr, nullptr, nullptr, nullptr);
     }
-    else
-        CameraDirector->initializeForBeginPlay(getInitialViewMode(), nullptr, nullptr, nullptr, nullptr);
 
     checkVehicleReady();
 }

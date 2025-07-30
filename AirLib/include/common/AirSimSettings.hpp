@@ -512,6 +512,7 @@ namespace airlib
         bool initial_instance_segmentation = true;
         bool log_messages_visible = true;
         bool show_los_debug_lines_ = false;
+        bool default_vehicle_possess = true;
         HomeGeoPoint origin_geopoint{ GeoPoint(47.641468, -122.140165, 122) }; //The geo-coordinate assigned to Unreal coordinate 0,0,0
         std::map<std::string, PawnPath> pawn_paths; //path for pawn blueprint
         std::map<std::string, std::unique_ptr<VehicleSetting>> vehicles;
@@ -1451,6 +1452,7 @@ namespace airlib
             api_port = settings_json.getInt("ApiServerPort", RpcLibPort);
             is_record_ui_visible = settings_json.getBool("RecordUIVisible", true);
             engine_sound = settings_json.getBool("EngineSound", false);
+            default_vehicle_possess = settings_json.getBool("DefaultVehiclePossess", true);
             enable_rpc = settings_json.getBool("EnableRpc", enable_rpc);
             speed_unit_factor = settings_json.getFloat("SpeedUnitFactor", 1.0f);
             speed_unit_label = settings_json.getString("SpeedUnitLabel", "m\\s");
